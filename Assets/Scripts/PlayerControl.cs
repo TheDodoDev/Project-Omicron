@@ -19,20 +19,33 @@ public class PlayerControl : MonoBehaviour
     private Rigidbody rb;
     private bool isGrounded;
     private bool toggleSprint;
+
+    private Animator animator;
     void Start()
     {
         rb = GetComponent<Rigidbody>();
         rb.freezeRotation = true;
         movementSpeed = walkSpeed;
         toggleSprint = true;
+        isGrounded = true;
+        animator = GetComponent<Animator>();
     }
 
     // Update is called once per frame
     void Update()
     {
+        transform.rotation =orientation.rotation;
         horizontalInput = Input.GetAxisRaw("Horizontal");
         verticalInput = Input.GetAxisRaw("Vertical");
         moveDirection = orientation.forward * verticalInput + orientation.right * horizontalInput;
+        if (moveDirection.magnitude > 0)
+        {
+            animator.SetBool("isWalking", true);
+        }
+        else
+        {
+            animator.SetBool("isWalking", false);
+        }
         if (toggleSprint)
         {
             if (Input.GetKeyDown(KeyCode.RightShift) || Input.GetKeyDown(KeyCode.LeftShift))
@@ -58,7 +71,17 @@ public class PlayerControl : MonoBehaviour
                 movementSpeed = walkSpeed;
             }
         }
-        if(transform.position.y < -15)
+        if (Input.GetAxisRaw("Jump") != 0)
+        {
+            Debug.Log(isGrounded);
+        }
+        if (isGrounded && Input.GetAxisRaw("Jump") != 0)
+        {
+            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+            isGrounded = false;
+        }
+
+        if (transform.position.y < -15)
         {
             transform.position = Vector3.zero + Vector3.up * 3;
         }
@@ -68,14 +91,12 @@ public class PlayerControl : MonoBehaviour
     {
         rb.AddForce(moveDirection.normalized * movementSpeed, ForceMode.Acceleration);
         rb.velocity = Vector3.ClampMagnitude(rb.velocity, movementSpeed);
+
     }
 
     private void FixedUpdate()
     {
-        if (isGrounded && Input.GetAxisRaw("Jump") != 0)
-        {
-            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
-            isGrounded = false;        }
+
     }
 
     private void OnTriggerEnter(Collider other)
@@ -89,9 +110,8 @@ public class PlayerControl : MonoBehaviour
         {
             isGrounded = true;
             Debug.Log("Entered Ground");
+            Physics.gravity = new Vector3(0, -9.8f, 0);
         }
-        rb.mass = 1;
-
     }
 
     private void OnCollisionExit(Collision collision)
@@ -100,7 +120,7 @@ public class PlayerControl : MonoBehaviour
         {
             isGrounded = false;
             Debug.Log("Exited Ground");
-            rb.mass = 100;
+            Physics.gravity = new Vector3(0, Physics.gravity.y * 5, 0);
         }
     }
 
