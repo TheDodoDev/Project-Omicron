@@ -34,18 +34,36 @@ public class PlayerControl : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        transform.rotation =orientation.rotation;
+        transform.rotation = orientation.rotation;
         horizontalInput = Input.GetAxisRaw("Horizontal");
         verticalInput = Input.GetAxisRaw("Vertical");
         moveDirection = orientation.forward * verticalInput + orientation.right * horizontalInput;
-        if (moveDirection.magnitude > 0)
+        if (moveDirection.magnitude > 0 && verticalInput != 0)
         {
             animator.SetBool("isWalking", true);
         }
-        else
+        if(verticalInput == 0)
         {
             animator.SetBool("isWalking", false);
         }
+
+        if (horizontalInput > 0)
+        {
+            animator.SetBool("isWalkingRight", true);
+            animator.SetBool("isWalkingLeft", false);
+        }
+        else if (horizontalInput < 0)
+        {
+            animator.SetBool("isWalkingLeft", true);
+            animator.SetBool("isWalkingRight", false);
+        }
+        else
+        {
+            animator.SetBool("isWalkingRight", false);
+            animator.SetBool("isWalkingLeft", false);
+        }
+
+
         if (toggleSprint)
         {
             if (Input.GetKeyDown(KeyCode.RightShift) || Input.GetKeyDown(KeyCode.LeftShift))
@@ -77,9 +95,9 @@ public class PlayerControl : MonoBehaviour
         }
         if (isGrounded && Input.GetAxisRaw("Jump") != 0)
         {
+            animator.SetTrigger("isJumping");
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
-            isGrounded = false;
-        }
+            isGrounded = false;        }
 
         if (transform.position.y < -15)
         {
@@ -108,9 +126,9 @@ public class PlayerControl : MonoBehaviour
     {
         if(collision.collider.CompareTag("Ground"))
         {
+            animator.SetBool("onGround", true);
             isGrounded = true;
             Debug.Log("Entered Ground");
-            Physics.gravity = new Vector3(0, -9.8f, 0);
         }
     }
 
@@ -118,9 +136,9 @@ public class PlayerControl : MonoBehaviour
     {
         if (collision.collider.CompareTag("Ground"))
         {
+            animator.SetBool("onGround", false);
             isGrounded = false;
             Debug.Log("Exited Ground");
-            Physics.gravity = new Vector3(0, Physics.gravity.y * 5, 0);
         }
     }
 
