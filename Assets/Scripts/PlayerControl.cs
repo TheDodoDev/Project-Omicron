@@ -38,30 +38,59 @@ public class PlayerControl : MonoBehaviour
         horizontalInput = Input.GetAxisRaw("Horizontal");
         verticalInput = Input.GetAxisRaw("Vertical");
         moveDirection = orientation.forward * verticalInput + orientation.right * horizontalInput;
-        if (moveDirection.magnitude > 0 && verticalInput != 0)
+        if (moveDirection.magnitude > 0 && verticalInput != 0 && movementSpeed == walkSpeed)
         {
             animator.SetBool("isWalking", true);
+            animator.SetBool("isRunning", false);
         }
-        if(verticalInput == 0)
+        if(moveDirection.magnitude > 0 && verticalInput != 0 && movementSpeed == sprintSpeed)
         {
+            animator.SetBool("isRunning", true);
             animator.SetBool("isWalking", false);
         }
-
-        if (horizontalInput > 0)
+        if (verticalInput == 0)
+        {
+            animator.SetBool("isWalking", false);
+            animator.SetBool("isRunning", false);
+        }
+        if (horizontalInput > 0 && movementSpeed == walkSpeed)
         {
             animator.SetBool("isWalkingRight", true);
             animator.SetBool("isWalkingLeft", false);
+            animator.SetBool("isRunningRight", false);
+            animator.SetBool("isRunningLeft", false);
+
         }
-        else if (horizontalInput < 0)
+        else if (horizontalInput < 0 && movementSpeed == walkSpeed)
         {
-            animator.SetBool("isWalkingLeft", true);
             animator.SetBool("isWalkingRight", false);
+            animator.SetBool("isWalkingLeft", true);
+            animator.SetBool("isRunningRight", false);
+            animator.SetBool("isRunningLeft", false);
+        }
+        else if (horizontalInput > 0 && movementSpeed == sprintSpeed)
+        {
+            animator.SetBool("isWalkingRight", false);
+            animator.SetBool("isWalkingLeft", false);
+            animator.SetBool("isRunningRight", true);
+            animator.SetBool("isRunningLeft", false);
+        }
+        else if (horizontalInput < 0 && movementSpeed == sprintSpeed)
+        {
+            animator.SetBool("isWalkingRight", false);
+            animator.SetBool("isWalkingLeft", false);
+            animator.SetBool("isRunningRight", false);
+            animator.SetBool("isRunningLeft", true);
         }
         else
         {
             animator.SetBool("isWalkingRight", false);
             animator.SetBool("isWalkingLeft", false);
+            animator.SetBool("isRunningRight", false);
+            animator.SetBool("isRunningLeft", false);
         }
+
+
 
 
         if (toggleSprint)
@@ -76,17 +105,6 @@ public class PlayerControl : MonoBehaviour
                 {
                     movementSpeed = walkSpeed;
                 }
-            }
-        }
-        else if(!toggleSprint)
-        {
-            if (Input.GetKey(KeyCode.RightShift) || Input.GetKey(KeyCode.LeftShift))
-            {
-               movementSpeed = sprintSpeed;
-            }
-            else
-            {
-                movementSpeed = walkSpeed;
             }
         }
         if (Input.GetAxisRaw("Jump") != 0)
