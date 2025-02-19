@@ -90,7 +90,14 @@ public class PlayerControl : MonoBehaviour
             animator.SetBool("isRunningLeft", false);
         }
 
-
+        if(rb.velocity.y < -1.0f)
+        {
+            animator.SetBool("isFalling", true);
+        }
+        else
+        {
+            animator.SetBool("isFalling", false);
+        }
 
 
         if (toggleSprint)
