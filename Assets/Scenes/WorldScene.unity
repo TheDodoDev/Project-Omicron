@@ -107,8 +107,8 @@ NavMeshSettings:
     serializedVersion: 2
     agentTypeID: 0
     agentRadius: 2
-    agentHeight: 1.5
-    agentSlope: 60
+    agentHeight: 2
+    agentSlope: 43.1
     agentClimb: 1.01
     ledgeDropHeight: 0
     maxJumpAcrossDistance: 0
@@ -117,7 +117,7 @@ NavMeshSettings:
     cellSize: 0.6666667
     manualTileSize: 0
     tileSize: 256
-    accuratePlacement: 0
+    accuratePlacement: 1
     maxJobWorkers: 0
     preserveTilesOutsideBounds: 0
     debug:
@@ -259,7 +259,7 @@ MeshCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 73804450}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: 73cca889b86002f4796f15b0c061584d, type: 2}
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 4
@@ -3079,11 +3079,11 @@ MeshCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1146983303}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: 73cca889b86002f4796f15b0c061584d, type: 2}
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 4
-  m_Convex: 1
+  m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: -5495902117074765545, guid: fbfd8baa19c6eb046b2e0a9fd1b3f808, type: 3}
 --- !u!1001 &1190837636
@@ -4401,7 +4401,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: fbfd8baa19c6eb046b2e0a9fd1b3f808, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 75.48
+      value: 76.95
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: fbfd8baa19c6eb046b2e0a9fd1b3f808, type: 3}
       propertyPath: m_LocalPosition.z
@@ -4531,7 +4531,7 @@ Rigidbody:
   m_Drag: 0
   m_AngularDrag: 0.05
   m_UseGravity: 1
-  m_IsKinematic: 0
+  m_IsKinematic: 1
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 1
@@ -4556,13 +4556,15 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   terrain: {fileID: 1378502340}
+  animator: {fileID: 0}
   walkPoint: {x: 0, y: 0, z: 0}
   walkPointCenter: {x: 458, y: 75.48, z: 580.09}
   walkPointRange: 13
-  sightRange: 15
-  attackRange: 8
+  sightRange: 25
+  attackRange: 15
   playerInSightRange: 0
   playerInAttackRange: 0
+  attackCooldown: 8
 --- !u!195 &1699326195
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -4582,7 +4584,7 @@ NavMeshAgent:
   m_AutoBraking: 1
   m_AutoRepath: 1
   m_Height: 1
-  m_BaseOffset: 0
+  m_BaseOffset: 1.2
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
 --- !u!1001 &1752752194

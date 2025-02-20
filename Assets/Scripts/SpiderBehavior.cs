@@ -13,18 +13,24 @@ public class SpiderBehavior : MonoBehaviour
     [SerializeField] Transform player;
     [SerializeField] LayerMask whatIsGround, whatIsPlayer;
     [SerializeField] Terrain terrain;
+    [SerializeField] Animator animator;
 
     //Patrolling
     [SerializeField] Vector3 walkPoint, walkPointCenter;
     bool walkPointSet;
     [SerializeField] float walkPointRange;
 
+    //Attacking
+    bool attackAvailable = true;
+
     //States
     [SerializeField] float sightRange, attackRange;
     [SerializeField] bool playerInSightRange, playerInAttackRange;
+    [SerializeField] float attackCooldown = 8;
     void Start()
     {
         agent = GetComponent<NavMeshAgent>();
+        animator = GetComponent<Animator>();    
     }
 
     // Update is called once per frame
@@ -37,9 +43,13 @@ public class SpiderBehavior : MonoBehaviour
         {
             Patrolling();
         }
-        if (playerInSightRange)
+        if (playerInSightRange && !playerInAttackRange)
         {
             Chasing();
+        }
+        if(playerInSightRange && playerInAttackRange)
+        {
+            Attacking();
         }
 
     }
@@ -82,6 +92,31 @@ public class SpiderBehavior : MonoBehaviour
 
     void Attacking()
     {
+        if (attackAvailable)
+        {
+            agent.SetDestination(transform.position);
+            transform.LookAt(transform.position);
+            animator.SetTrigger("Attack");
+            StartCoroutine(AttackCooldown());
+        }
+        else
+        {
+            Chasing();
+        }
+    }
 
+    IEnumerator AttackCooldown()
+    {
+        attackAvailable = false;
+        yield return new WaitForSeconds(attackCooldown);
+        attackAvailable = true;
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Player"))
+        {
+            agent.SetDestination(transform.position);
+        }
     }
 }
