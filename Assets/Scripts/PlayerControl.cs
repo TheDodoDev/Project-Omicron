@@ -144,7 +144,11 @@ public class PlayerControl : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-
+        if(other.CompareTag("Projectile"))
+        {
+            TakeDamage(other.GetComponent<VFXBehavior>().GetDamage());
+            Destroy(other.gameObject);
+        }
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -170,6 +174,16 @@ public class PlayerControl : MonoBehaviour
     public void SetSprintToggle(bool toggle)
     {
         this.toggleSprint = toggle;
+    }
+
+    public void TakeDamage(int damage)
+    {
+        Debug.Log("Taken " + damage + " damage");
+    }
+
+    public void InflictStatusEffect()
+    {
+
     }
 
 }

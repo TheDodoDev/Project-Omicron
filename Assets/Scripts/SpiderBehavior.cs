@@ -14,6 +14,7 @@ public class SpiderBehavior : MonoBehaviour
     [SerializeField] LayerMask whatIsGround, whatIsPlayer;
     [SerializeField] Terrain terrain;
     [SerializeField] Animator animator;
+    [SerializeField] GameObject projectile;
 
     //Patrolling
     [SerializeField] Vector3 walkPoint, walkPointCenter;
@@ -51,6 +52,7 @@ public class SpiderBehavior : MonoBehaviour
         {
             Attacking();
         }
+        Debug.DrawRay(transform.position + transform.forward * 3.5f, transform.forward * 1, Color.red, 0.01f);
 
     }
 
@@ -64,7 +66,6 @@ public class SpiderBehavior : MonoBehaviour
         {
             agent.SetDestination(walkPoint);
         }
-        Debug.Log(Vector3.Distance(transform.position, walkPoint));
         if (Vector3.Distance(transform.position, walkPoint) <= 2f)
         {
             Debug.Log("Resetting Walkpoint");
@@ -79,7 +80,7 @@ public class SpiderBehavior : MonoBehaviour
         float yPos = terrain.SampleHeight(walkPointCenter + new Vector3(randomX, 0, randomZ));
         walkPoint = new Vector3(walkPointCenter.x + randomX, yPos + 1.5f, walkPointCenter.z + randomZ);
 
-        if (Physics.Raycast(walkPoint, -transform.up, 2))
+        if (Physics.Raycast(walkPoint, -transform.up, 2, whatIsGround))
         {
             walkPointSet = true;
         }
@@ -87,7 +88,8 @@ public class SpiderBehavior : MonoBehaviour
 
     void Chasing()
     {
-        agent.SetDestination(player.position);  
+        if(!Physics.Raycast(transform.position + transform.forward * 3f, transform.forward, 1, whatIsPlayer)) agent.SetDestination(player.position);
+        else agent.SetDestination(transform.position);
     }
 
     void Attacking()
@@ -112,11 +114,11 @@ public class SpiderBehavior : MonoBehaviour
         attackAvailable = true;
     }
 
-    private void OnCollisionEnter(Collision collision)
+    public void Attack()
     {
-        if (collision.gameObject.CompareTag("Player"))
-        {
-            agent.SetDestination(transform.position);
-        }
+        GameObject o = Instantiate(projectile, transform.position + transform.up * 3 - transform.forward, Quaternion.identity);
+        Destroy(o, 3f);
     }
+
+        
 }
