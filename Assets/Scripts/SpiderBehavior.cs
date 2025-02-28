@@ -23,11 +23,11 @@ public class SpiderBehavior : MonoBehaviour
 
     //Attacking
     bool attackAvailable = true;
-
+    bool meleeAvailable = true;
     //States
     [SerializeField] float sightRange, attackRange;
     [SerializeField] bool playerInSightRange, playerInAttackRange;
-    [SerializeField] float attackCooldown = 8;
+    [SerializeField] float attackCooldown;
     void Start()
     {
         agent = GetComponent<NavMeshAgent>();
@@ -88,8 +88,16 @@ public class SpiderBehavior : MonoBehaviour
 
     void Chasing()
     {
-        if(!Physics.Raycast(transform.position + transform.forward * 3f, transform.forward, 1, whatIsPlayer)) agent.SetDestination(player.position);
-        else agent.SetDestination(transform.position);
+        if (!Physics.Raycast(transform.position + transform.forward * 3f, transform.forward, 1, whatIsPlayer)) agent.SetDestination(player.position);
+        else 
+        {
+            agent.SetDestination(transform.position);
+            if (meleeAvailable)
+            {
+                player.gameObject.GetComponent<PlayerControl>().TakeDamage(5);
+                StartCoroutine(MeleeCooldown());
+            }
+        }
     }
 
     void Attacking()
@@ -114,11 +122,19 @@ public class SpiderBehavior : MonoBehaviour
         attackAvailable = true;
     }
 
+    IEnumerator MeleeCooldown()
+    {
+        meleeAvailable = false;
+        yield return new WaitForSeconds(attackCooldown/2);
+        meleeAvailable = true;
+    }
+
     public void Attack()
     {
         GameObject o = Instantiate(projectile, transform.position + transform.up * 3 - transform.forward, Quaternion.identity);
-        Destroy(o, 3f);
+        Destroy(o,3f);
     }
+
 
         
 }

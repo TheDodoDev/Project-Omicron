@@ -38,8 +38,8 @@ public class VFXBehavior : MonoBehaviour
     void TrackPlayer()
     {
         Vector3 playerPos = player.transform.position;
-        rb.AddForce(transform.forward * 12);
-        rb.velocity = Vector3.ClampMagnitude(rb.velocity, 15);
+        rb.AddForce(transform.forward * 40, ForceMode.Acceleration);
+        rb.velocity = Vector3.ClampMagnitude(rb.velocity, 40);
     }
 
     public int GetDamage()
