@@ -15,13 +15,17 @@ public class PlayerCam : MonoBehaviour
 
     [SerializeField] Transform orientation;
 
-    private GameObject playerData;
+    private GameObject player;
     private float xRotation, yRotation;
     private int score;
     private float shotsFired, shotsHit;
+
+    //Object Interaction
+    [SerializeField] LayerMask whatIsInteractable;
+    [SerializeField] GameObject actionNotification;
     void Start()
     {
-        playerData = GameObject.Find("PlayerData");
+        player = GameObject.Find("Player");
         score = 0;
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
@@ -40,7 +44,37 @@ public class PlayerCam : MonoBehaviour
 
         transform.rotation = Quaternion.Euler(xRotation, yRotation, 0);
         orientation.rotation = Quaternion.Euler(0, yRotation, 0);
-        
+
+        if(player.GetComponent<PlayerControl>().IsInventoryOpen())
+        {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
+        else
+        {
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+        }
+
+        Ray shot = Camera.main.ScreenPointToRay(Input.mousePosition);
+        RaycastHit hit;
+        bool rayCast = Physics.Raycast(shot, out hit, 5, whatIsInteractable);
+        if (rayCast)
+        {
+            Debug.Log(hit.transform.gameObject.name);
+            actionNotification.SetActive(true);
+            if(Input.GetKeyDown(KeyCode.F))
+            {
+                InteractableBehavior interactable = hit.transform.gameObject.GetComponent<InteractableBehavior>();
+                interactable.Action();
+                hit.transform.gameObject.SetActive(false);
+            }
+        }
+        else
+        {
+            actionNotification.SetActive(false);
+        }
+
     }
     public void SetSens(float sens)
     {

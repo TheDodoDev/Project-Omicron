@@ -7,7 +7,8 @@ public class VFXBehavior : MonoBehaviour
     //VFX Variables
     [SerializeField] enum VFXType
     {
-        BallOfBlemish
+        BallOfBlemish,
+        ElectricBall
     }
     [SerializeField] VFXType type;
 
@@ -23,6 +24,10 @@ public class VFXBehavior : MonoBehaviour
         player = GameObject.Find("Player");
         rb = GetComponent<Rigidbody>();
         camera = player.transform.GetChild(2).transform;
+        if (type == VFXType.ElectricBall)
+        {
+            rb.velocity = camera.transform.forward * 30f;
+        }
     }
 
     // Update is called once per frame
@@ -32,6 +37,10 @@ public class VFXBehavior : MonoBehaviour
         {
             transform.LookAt(camera.position);
             TrackPlayer();
+        }
+        if(type == VFXType.ElectricBall)
+        {
+            transform.LookAt(camera.position);
         }
     }
 

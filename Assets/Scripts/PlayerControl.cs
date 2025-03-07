@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -30,8 +31,14 @@ public class PlayerControl : MonoBehaviour
     private bool canReduceHealthBar, changingStam, canReduceManaBar, canIncreaseStaminaBar;
 
     //Inventory
-    [SerializeField] GameObject hotBar, selectionIndicator, inventory;
+    [SerializeField] GameObject hotBarMenu, selectionIndicator, inventoryMenu;
     private int currentSelected;
+    GameObject[,] inventory = new GameObject[4, 4];
+    GameObject[] hotBar = new GameObject[4];
+    GameObject equipped;
+
+    //Spells
+    [SerializeField] GameObject electricBall;
     void Start()
     {
         rb = GetComponent<Rigidbody>();
@@ -44,6 +51,9 @@ public class PlayerControl : MonoBehaviour
         currHP = maxHP;
         maxStam = 100;
         curStam = 100;
+        currMana = 100;
+        maxMana = 100;
+        currentSelected = 1;
     }
 
     // Update is called once per frame
@@ -100,7 +110,28 @@ public class PlayerControl : MonoBehaviour
             SwitchSelectedSlot(4);
             currentSelected = 4;
         }
-        
+        equipped = hotBar[currentSelected - 1];
+        if (equipped != null)
+        {
+            Debug.Log("Equipped " + equipped.name);
+            Debug.Log(equipped.GetComponent<InteractableBehavior>().GetID());
+
+        }
+        else
+        {
+            Debug.Log("Equipped Nothing");
+        }
+        if (equipped != null && equipped.GetComponent<InteractableBehavior>().GetID() == 1)
+        {
+            Debug.Log("Firing");
+            if (Input.GetMouseButtonDown(0) && currMana >= 10)
+            {
+                GameObject o = Instantiate(electricBall, transform.position + transform.forward * 0.5f + transform.up * 2f, Quaternion.identity);
+                Destroy(o, 3f);
+                LoseMana(1);
+            }
+        }
+
         //Stats
         if (canReduceHealthBar)
         {
@@ -294,9 +325,138 @@ public class PlayerControl : MonoBehaviour
 
     public void ToggleInventory()
     {
-        inventory.SetActive(!inventory.activeSelf);
+        inventoryMenu.SetActive(!inventoryMenu.activeSelf);
     }
 
+    public bool IsInventoryOpen()
+    {
+        return inventoryMenu.activeSelf;
+    }
+
+    public bool AddObjectToInventory(GameObject gameObject)
+    {
+        bool foundLastSlot = false;
+        for (int i = 0; i < hotBar.Length; i++)
+        {
+            if (hotBar[i] != null)
+            {
+                if (gameObject.GetComponent<InteractableBehavior>().GetID() == hotBar[i].GetComponent<InteractableBehavior>().GetID())
+                {
+                    hotBar[i].GetComponent<InteractableBehavior>().SetNum(hotBar[i].GetComponent<InteractableBehavior>().GetNum() + 1);
+                    foundLastSlot = true;
+                    RenderInventory();
+                    return foundLastSlot;
+                }
+            }
+        }
+        for (int r = 0; r < inventory.GetLength(0) && !foundLastSlot; r++)
+        {
+            for (int c = 0; c < inventory.GetLength(1); c++)
+            {
+                if (inventory[r, c] != null && gameObject.GetComponent<InteractableBehavior>().GetID() == inventory[r, c].GetComponent<InteractableBehavior>().GetID())
+                {
+                    inventory[r, c].GetComponent<InteractableBehavior>().SetNum(inventory[r, c].GetComponent<InteractableBehavior>().GetNum() + 1);
+                    RenderInventory();
+                    foundLastSlot = true;
+                    break;
+                }
+            }
+        }
+        for (int i = 0; i < hotBar.Length; i++)
+        {
+            if (hotBar[i] == null)
+            {
+                hotBar[i] = gameObject;
+                hotBar[i].GetComponent<InteractableBehavior>().SetNum(1);
+                foundLastSlot = true;
+                RenderInventory();
+                return foundLastSlot;
+            }
+        }
+        for (int r = 0; r < inventory.GetLength(0) && !foundLastSlot; r++)
+        {
+            for (int c = 0; c < inventory.GetLength(1); c++)
+            {
+                if (inventory[r, c] == null)
+                {
+                    inventory[r, c] = gameObject;
+                    inventory[r, c].GetComponent<InteractableBehavior>().SetNum(1);
+                    foundLastSlot = true;
+                    break;
+                }
+            }
+        }
+        RenderInventory();
+        return foundLastSlot;
+    }
+
+    public void RenderInventory()
+    {
+        for (int i = 0; i < hotBar.Length; i++)
+        {
+            if (hotBar[i] != null)
+            {
+                hotBarMenu.transform.GetChild(i + 1).Find("Image").GetComponent<Image>().sprite = hotBar[i].GetComponent<InteractableBehavior>().GetIcon();
+                hotBarMenu.transform.GetChild(i + 1).Find("Image").GetComponent<Image>().color = new Color(255, 255, 255, 0.6f);
+                hotBarMenu.transform.GetChild(i + 1).Find("QuantityText").gameObject.SetActive(true);
+                hotBarMenu.transform.GetChild(i + 1).Find("QuantityText").GetComponent<TextMeshProUGUI>().text = "" + hotBar[i].GetComponent<InteractableBehavior>().GetNum();
+            }
+            else
+            {
+                hotBarMenu.transform.GetChild(i + 1).Find("QuantityText").gameObject.SetActive(false);
+                hotBarMenu.transform.GetChild(i + 1).Find("Image").GetComponent<Image>().color = new Color(255, 255, 255, 0.0f);
+            }
+        }
+        for (int r = 0; r < inventory.GetLength(0); r++)
+        {
+            for (int c = 0; c < inventory.GetLength(1); c++)
+            {
+                if(inventory[r, c] != null)
+                {
+                    inventoryMenu.transform.Find("InvSlot" + r + "_" + c).Find("Image").GetComponent<Image>().sprite = inventory[r,c].GetComponent<InteractableBehavior>().GetIcon();
+                    inventoryMenu.transform.Find("InvSlot" + r + "_" + c).Find("Image").GetComponent<Image>().color = new Color(255, 255, 255, 0.6f);
+                    inventoryMenu.transform.Find("InvSlot" + r + "_" + c).Find("QuantityText").gameObject.SetActive(true);
+                    inventoryMenu.transform.Find("InvSlot" + r + "_" + c).Find("QuantityText").GetComponent<TextMeshProUGUI>().text = "" + inventory[r, c].GetComponent<InteractableBehavior>().GetNum();
+                }
+                else
+                {
+                    inventoryMenu.transform.Find("InvSlot" + r + "_" + c).Find("QuantityText").gameObject.SetActive(false);
+                    inventoryMenu.transform.Find("InvSlot" + r + "_" + c).Find("Image").GetComponent<Image>().color = new Color(255, 255, 255, 0.0f);
+                }
+            }
+        }
+    }
+
+    public void MoveItem(int srcR, int srcC, int tarR, int tarC)
+    {
+        Debug.Log("Moving from (" + srcR + ", " + srcC + ") to (" + tarR + ", " + tarC + ")" );
+        if(srcR == -1 && tarR == -1)
+        {
+            GameObject temp = hotBar[srcC];
+            hotBar[srcC] = hotBar[tarC];
+            hotBar[tarC] = temp;
+        }
+        if(srcR == -1 && tarR > -1)
+        {
+            GameObject temp = hotBar[srcC];
+            hotBar[srcC] = inventory[tarR, tarC];
+            inventory[tarR, tarC] = temp;
+
+        }
+        if (srcR > -1 && tarR == -1)
+        {
+            GameObject temp = inventory[srcR, srcC];
+            inventory[srcR, srcC] = hotBar[tarC];
+            hotBar[tarC] = temp;
+        }
+        if(srcR > -1 && tarR > -1)
+        {
+            GameObject temp = inventory[srcR, srcC];
+            inventory[srcR, srcC] = inventory[tarR, tarC];
+            inventory[tarR, tarC] = temp;
+        }
+        RenderInventory();
+    }
     IEnumerator CheckIfNotDamaged()
     {
         float tempHP = currHP;
