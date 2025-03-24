@@ -28,6 +28,8 @@ public class SpiderBehavior : MonoBehaviour
     [SerializeField] float sightRange, attackRange;
     [SerializeField] bool playerInSightRange, playerInAttackRange;
     [SerializeField] float attackCooldown;
+    [SerializeField] int health;
+    [SerializeField] Material damagedMat, originalMat;
     void Start()
     {
         agent = GetComponent<NavMeshAgent>();
@@ -53,6 +55,11 @@ public class SpiderBehavior : MonoBehaviour
             Attacking();
         }
         Debug.DrawRay(transform.position + transform.forward * 3.5f, transform.forward * 1, Color.red, 0.01f);
+
+        if(health <= 0)
+        {
+            Destroy(gameObject);
+        }
 
     }
 
@@ -129,12 +136,36 @@ public class SpiderBehavior : MonoBehaviour
         meleeAvailable = true;
     }
 
+    IEnumerator DamageIndicator()
+    {
+        transform.Find("Cube").GetComponent<Renderer>().material = damagedMat;
+        yield return new WaitForSeconds(0.2f);
+        transform.Find("Cube").GetComponent<Renderer>().material = originalMat;
+
+    }
+
     public void Attack()
     {
         GameObject o = Instantiate(projectile, transform.position + transform.up * 3 - transform.forward, Quaternion.identity);
         Destroy(o,3f);
     }
 
+    public void TakeDamage(int damage)
+    {
+        health -= damage;
+        StartCoroutine(DamageIndicator());
+        Debug.Log("Taken " + damage + " damage");
+    }
 
-        
+    public void OnCollisionEnter(Collision collision)
+    {
+        if(collision.gameObject.CompareTag("FriendlyProjectile"))
+        {
+            TakeDamage(collision.gameObject.GetComponent<VFXBehavior>().GetDamage());
+            StartCoroutine(DamageIndicator());
+            Destroy(collision.gameObject);
+        }
+    }
+
+
 }

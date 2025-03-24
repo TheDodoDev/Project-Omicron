@@ -113,3 +113,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   interactionType: 0
   playerControl: {fileID: 0}
+  icon: {fileID: 0}
+  name: 
+  id: 0
+  num: 0
+  equipped: {fileID: 2953079029083080300, guid: f7dc55fd8d95a364d958bd1de19c9c0c, type: 3}

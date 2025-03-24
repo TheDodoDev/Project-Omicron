@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: 5285237776740082187}
   m_Layer: 0
   m_Name: Electric Ball
-  m_TagString: Untagged
+  m_TagString: FriendlyProjectile
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -129,7 +129,9 @@ MonoBehaviour:
   camera: {fileID: 0}
   player: {fileID: 0}
   rb: {fileID: 0}
-  damage: 0
+  damage: 10
+  cooldown: 0
+  manaCost: 2
 --- !u!54 &2894394354510838244
 Rigidbody:
   m_ObjectHideFlags: 0

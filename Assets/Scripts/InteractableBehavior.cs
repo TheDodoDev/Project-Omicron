@@ -19,12 +19,15 @@ public class InteractableBehavior : MonoBehaviour
     [SerializeField] int id;
 
     [SerializeField] int num;
-    public void Action()
+
+    [SerializeField] GameObject equipped;
+    public bool Action()
     {
         if(interactionType == InteractionType.PickUp)
         {
-            playerControl.AddObjectToInventory(gameObject);
+            return playerControl.AddObjectToInventory(gameObject);
         }
+        return false;
     }
 
     public Sprite GetIcon()
@@ -50,5 +53,10 @@ public class InteractableBehavior : MonoBehaviour
     public void SetNum(int num)
     {
         this.num = num;
+    }
+
+    public GameObject GetEquipped()
+    {
+        return equipped;
     }
 }

@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Rendering.HighDefinition;
 
 public class VFXBehavior : MonoBehaviour
 {
@@ -8,10 +10,11 @@ public class VFXBehavior : MonoBehaviour
     [SerializeField] enum VFXType
     {
         BallOfBlemish,
-        ElectricBall
+        ElectricBall,
+        FireBall
     }
     [SerializeField] VFXType type;
-
+    [SerializeField] ParticleSystem explosion;
     //References
     [SerializeField] Transform camera;
     [SerializeField] GameObject player;
@@ -19,6 +22,8 @@ public class VFXBehavior : MonoBehaviour
 
     //Stats
     [SerializeField] int damage;
+    [SerializeField] float cooldown;
+    [SerializeField] int manaCost;
     void Start()
     {
         player = GameObject.Find("Player");
@@ -27,6 +32,10 @@ public class VFXBehavior : MonoBehaviour
         if (type == VFXType.ElectricBall)
         {
             rb.velocity = camera.transform.forward * 30f;
+        }
+        if (type == VFXType.FireBall)
+        {
+            rb.velocity = camera.transform.forward * 20f;
         }
     }
 
@@ -54,5 +63,42 @@ public class VFXBehavior : MonoBehaviour
     public int GetDamage()
     {
         return damage;
+    }
+
+    public int GetManaCost()
+    { 
+        return manaCost;
+    }
+
+    public float GetCooldown()
+    {
+        return cooldown; 
+    }
+
+    public void OnCollisionEnter(Collision collision)
+    {
+        if(type == VFXType.FireBall && !collision.gameObject.CompareTag("Player"))
+        {
+            if(!collision.gameObject.CompareTag("Enemy"))
+            {
+                GameObject[] gameObjects = GameObject.FindGameObjectsWithTag("Enemy");
+                foreach(GameObject x in gameObjects)
+                {
+                    float dist = Vector3.Distance(x.transform.position, transform.position);
+                    if (dist <= 10)
+                    {
+                        if(x.GetComponent<SpiderBehavior>() != null)
+                        {
+                            x.GetComponent<SpiderBehavior>().TakeDamage((int)(damage * (10 - dist) / 10));
+                        }
+                    }
+                    Debug.Log(dist);
+                }
+            }
+            ParticleSystem o = Instantiate(explosion, transform.position, explosion.transform.rotation);
+            Destroy(o, 1.2f);
+            o.Play();
+            Destroy(gameObject);
+        }
     }
 }

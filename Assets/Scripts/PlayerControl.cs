@@ -35,10 +35,15 @@ public class PlayerControl : MonoBehaviour
     private int currentSelected;
     GameObject[,] inventory = new GameObject[4, 4];
     GameObject[] hotBar = new GameObject[4];
-    GameObject equipped;
+    GameObject equipped, inHand;
+    [SerializeField] GameObject hand;
 
     //Spells
-    [SerializeField] GameObject electricBall;
+    [SerializeField] GameObject electricBall, fireBall;
+    [SerializeField] GameObject spellSystem, spellSelectionIndicator;
+    GameObject[] spells = new GameObject[4];
+    bool[] canUseSpell = new bool[4];
+    private int selectedSpell = 0;
     void Start()
     {
         rb = GetComponent<Rigidbody>();
@@ -54,6 +59,12 @@ public class PlayerControl : MonoBehaviour
         currMana = 100;
         maxMana = 100;
         currentSelected = 1;
+        spells[0] = electricBall;
+        spells[1] = fireBall;
+        canUseSpell[0] = true;
+        canUseSpell[1] = true;
+        canUseSpell[2] = true;
+        canUseSpell[3] = true;
     }
 
     // Update is called once per frame
@@ -110,26 +121,40 @@ public class PlayerControl : MonoBehaviour
             SwitchSelectedSlot(4);
             currentSelected = 4;
         }
-        equipped = hotBar[currentSelected - 1];
-        if (equipped != null)
+        if (equipped != null && equipped.GetComponent<InteractableBehavior>().GetID() == 1)
         {
-            Debug.Log("Equipped " + equipped.name);
-            Debug.Log(equipped.GetComponent<InteractableBehavior>().GetID());
-
+            spellSystem.SetActive(true);
+            if (Input.GetMouseButtonDown(0) && spells[selectedSpell] != null && currMana >= spells[selectedSpell].GetComponent<VFXBehavior>().GetManaCost() && canUseSpell[selectedSpell])
+            {
+                GameObject o = Instantiate(spells[selectedSpell], transform.position + transform.forward * 0.5f + transform.up * 2f, Quaternion.identity);
+                LoseMana(o.GetComponent<VFXBehavior>().GetManaCost());
+                StartCoroutine(SpellCooldown(selectedSpell, o.GetComponent<VFXBehavior>().GetCooldown()));
+                canUseSpell[selectedSpell] = false;
+                Destroy(o, 3f);
+            }
+            if(Input.GetKeyDown(KeyCode.Q))
+            {
+                selectedSpell -= 1;
+                if(selectedSpell < 0)
+                {
+                    selectedSpell = 3;
+                }
+                SwitchedSelectedSpell(selectedSpell);
+            }
+            else if(Input.GetKeyDown(KeyCode.E))
+            {
+                selectedSpell += 1;
+                if(selectedSpell > 3)
+                {
+                    selectedSpell = 0;
+                }
+                SwitchedSelectedSpell(selectedSpell);
+            }
+            Debug.Log(selectedSpell);
         }
         else
         {
-            Debug.Log("Equipped Nothing");
-        }
-        if (equipped != null && equipped.GetComponent<InteractableBehavior>().GetID() == 1)
-        {
-            Debug.Log("Firing");
-            if (Input.GetMouseButtonDown(0) && currMana >= 10)
-            {
-                GameObject o = Instantiate(electricBall, transform.position + transform.forward * 0.5f + transform.up * 2f, Quaternion.identity);
-                Destroy(o, 3f);
-                LoseMana(1);
-            }
+            spellSystem.SetActive(false);
         }
 
         //Stats
@@ -320,7 +345,24 @@ public class PlayerControl : MonoBehaviour
 
     public void SwitchSelectedSlot(int newSlot)
     {
+        if(newSlot != currentSelected)
+        {
+            Destroy(inHand);
+            equipped = hotBar[newSlot - 1];
+            if (equipped != null)
+            {
+                inHand = Instantiate(equipped.GetComponent<InteractableBehavior>().GetEquipped());
+                inHand.transform.SetParent(hand.transform, false);
+                inHand.transform.position = hand.transform.Find("Placeholder").transform.position;
+                inHand.transform.rotation = hand.transform.Find("Placeholder").transform.rotation;
+            }
+        }
         selectionIndicator.transform.localPosition = new Vector3(-200 + 100 * (newSlot - 1), 0, 0);
+    }
+
+    public void SwitchedSelectedSpell(int newSlot)
+    {
+        spellSelectionIndicator.transform.localPosition = new Vector3(500 + 110 * newSlot, -450, 0);
     }
 
     public void ToggleInventory()
@@ -425,6 +467,17 @@ public class PlayerControl : MonoBehaviour
                 }
             }
         }
+
+        Destroy(inHand);
+        equipped = hotBar[currentSelected - 1];
+        if (equipped != null)
+        {
+            inHand = Instantiate(equipped.GetComponent<InteractableBehavior>().GetEquipped());
+            inHand.transform.SetParent(hand.transform, false);
+            inHand.transform.position = hand.transform.Find("Placeholder").transform.position;
+            inHand.transform.rotation = hand.transform.Find("Placeholder").transform.rotation;
+        }
+
     }
 
     public void MoveItem(int srcR, int srcC, int tarR, int tarC)
@@ -471,7 +524,6 @@ public class PlayerControl : MonoBehaviour
     {
         float amountToReduce = lostHealthBar.GetComponent<Image>().rectTransform.rect.width - healthBar.GetComponent<Image>().rectTransform.rect.width;
         amountToReduce /= 10;
-        Debug.Log(amountToReduce);
         for(int i = 0; i < 10; i++)
         {
             yield return new WaitForSeconds(0.05f);
@@ -493,7 +545,6 @@ public class PlayerControl : MonoBehaviour
     {
         float amountToReduce = lostManaBar.GetComponent<Image>().rectTransform.rect.width - manaBar.GetComponent<Image>().rectTransform.rect.width;
         amountToReduce /= 10;
-        Debug.Log(amountToReduce);
         for (int i = 0; i < 10; i++)
         {
             yield return new WaitForSeconds(0.05f);
@@ -513,7 +564,7 @@ public class PlayerControl : MonoBehaviour
     IEnumerator FillStaminaBar()
     {
         yield return new WaitForSeconds(0.1f);
-        if (curStam < maxStam) curStam += 1;
+        if (curStam < maxStam) curStam += 2;
         staminaBar.GetComponent<Image>().rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 500 * curStam / maxStam);
         changingStam = false;
     }
@@ -526,6 +577,12 @@ public class PlayerControl : MonoBehaviour
         {
             canIncreaseStaminaBar = true;
         }
+    }
+
+    IEnumerator SpellCooldown(int selectedSpell, float cooldown)
+    {
+        yield return new WaitForSeconds(cooldown);
+        canUseSpell[selectedSpell] = true;
     }
 
 

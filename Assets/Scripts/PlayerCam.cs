@@ -66,8 +66,10 @@ public class PlayerCam : MonoBehaviour
             if(Input.GetKeyDown(KeyCode.F))
             {
                 InteractableBehavior interactable = hit.transform.gameObject.GetComponent<InteractableBehavior>();
-                interactable.Action();
-                hit.transform.gameObject.SetActive(false);
+                if (interactable.Action())
+                {
+                    hit.transform.gameObject.SetActive(false);
+                }
             }
         }
         else
