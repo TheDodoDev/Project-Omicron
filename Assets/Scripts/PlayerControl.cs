@@ -29,6 +29,7 @@ public class PlayerControl : MonoBehaviour
     //Stats
     [SerializeField] float maxHP, currHP, maxStam, curStam, maxMana, currMana;
     private bool canReduceHealthBar, changingStam, canReduceManaBar, canIncreaseStaminaBar;
+    private int coins;
 
     //Inventory
     [SerializeField] GameObject hotBarMenu, selectionIndicator, inventoryMenu;
@@ -37,6 +38,7 @@ public class PlayerControl : MonoBehaviour
     GameObject[] hotBar = new GameObject[4];
     GameObject equipped, inHand;
     [SerializeField] GameObject hand;
+    [SerializeField] TextMeshProUGUI coinText;
 
     //Spells
     [SerializeField] GameObject electricBall, fireBall;
@@ -509,6 +511,12 @@ public class PlayerControl : MonoBehaviour
             inventory[tarR, tarC] = temp;
         }
         RenderInventory();
+    }
+
+    public void AddCoins(int coins)
+    {
+        this.coins += coins;
+        coinText.text = coins.ToString();
     }
     IEnumerator CheckIfNotDamaged()
     {

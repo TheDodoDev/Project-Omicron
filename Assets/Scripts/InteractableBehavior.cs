@@ -6,7 +6,8 @@ public class InteractableBehavior : MonoBehaviour
 {
     [SerializeField]enum InteractionType{
         PickUp,
-        Activate
+        Activate,
+        Open
     }
     [SerializeField] InteractionType interactionType;
 
@@ -21,11 +22,20 @@ public class InteractableBehavior : MonoBehaviour
     [SerializeField] int num;
 
     [SerializeField] GameObject equipped;
+
     public bool Action()
     {
+        AudioSource audiosrc = GetComponent<AudioSource>();
         if(interactionType == InteractionType.PickUp)
         {
             return playerControl.AddObjectToInventory(gameObject);
+        }
+        if (interactionType == InteractionType.Open)
+        {
+            gameObject.GetComponent<Animator>().SetTrigger("open");
+            playerControl.AddCoins(Random.Range(3, 9));
+            audiosrc.PlayOneShot(audiosrc.clip);
+            return false;
         }
         return false;
     }
@@ -59,4 +69,5 @@ public class InteractableBehavior : MonoBehaviour
     {
         return equipped;
     }
+
 }
