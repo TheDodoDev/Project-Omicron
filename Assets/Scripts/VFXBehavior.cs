@@ -56,7 +56,7 @@ public class VFXBehavior : MonoBehaviour
     void TrackPlayer()
     {
         Vector3 playerPos = player.transform.position;
-        rb.AddForce(transform.forward * 40, ForceMode.Acceleration);
+        rb.AddForce(transform.forward * 80, ForceMode.Acceleration);
         rb.velocity = Vector3.ClampMagnitude(rb.velocity, 40);
     }
 
@@ -79,20 +79,16 @@ public class VFXBehavior : MonoBehaviour
     {
         if(type == VFXType.FireBall && !collision.gameObject.CompareTag("Player"))
         {
-            if(!collision.gameObject.CompareTag("Enemy"))
+            GameObject[] gameObjects = GameObject.FindGameObjectsWithTag("Enemy");
+            foreach(GameObject x in gameObjects)
             {
-                GameObject[] gameObjects = GameObject.FindGameObjectsWithTag("Enemy");
-                foreach(GameObject x in gameObjects)
+                float dist = Vector3.Distance(x.transform.position, transform.position);
+                if (dist <= 10)
                 {
-                    float dist = Vector3.Distance(x.transform.position, transform.position);
-                    if (dist <= 10)
+                    if(x.GetComponent<SpiderBehavior>() != null)
                     {
-                        if(x.GetComponent<SpiderBehavior>() != null)
-                        {
-                            x.GetComponent<SpiderBehavior>().TakeDamage((int)(damage * (10 - dist) / 10));
-                        }
+                        x.GetComponent<SpiderBehavior>().TakeDamage((int)(damage * (10 - dist) / 10));
                     }
-                    Debug.Log(dist);
                 }
             }
             ParticleSystem o = Instantiate(explosion, transform.position, explosion.transform.rotation);

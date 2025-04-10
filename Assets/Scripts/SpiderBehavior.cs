@@ -30,10 +30,13 @@ public class SpiderBehavior : MonoBehaviour
     [SerializeField] float attackCooldown;
     [SerializeField] int health;
     [SerializeField] Material damagedMat, originalMat;
+
+    //Drops
+    [SerializeField] GameObject[] drops;
     void Start()
     {
         agent = GetComponent<NavMeshAgent>();
-        animator = GetComponent<Animator>();    
+        animator = GetComponent<Animator>();
     }
 
     // Update is called once per frame
@@ -58,6 +61,8 @@ public class SpiderBehavior : MonoBehaviour
 
         if(health <= 0)
         {
+            int rand = Random.Range(0, drops.Length);
+            Instantiate(drops[rand], transform.position, Quaternion.identity);
             Destroy(gameObject);
         }
 
@@ -75,7 +80,6 @@ public class SpiderBehavior : MonoBehaviour
         }
         if (Vector3.Distance(transform.position, walkPoint) <= 2f)
         {
-            Debug.Log("Resetting Walkpoint");
             walkPointSet = false;
         }
     }
@@ -154,7 +158,6 @@ public class SpiderBehavior : MonoBehaviour
     {
         health -= damage;
         StartCoroutine(DamageIndicator());
-        Debug.Log("Taken " + damage + " damage");
     }
 
     public void OnCollisionEnter(Collision collision)

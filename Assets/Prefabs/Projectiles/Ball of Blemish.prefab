@@ -129,10 +129,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   type: 0
+  explosion: {fileID: 0}
   camera: {fileID: 0}
   player: {fileID: 0}
   rb: {fileID: 0}
-  damage: 10
+  damage: 25
+  cooldown: 0
+  manaCost: 0
 --- !u!135 &2164098434448259085
 SphereCollider:
   m_ObjectHideFlags: 0

@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering.HighDefinition;
+using UnityEngine.SceneManagement;
 
 public class InteractableBehavior : MonoBehaviour
 {
@@ -9,7 +11,19 @@ public class InteractableBehavior : MonoBehaviour
         Activate,
         Open
     }
+
+    public enum ItemType
+    {
+        None,
+        Boots,
+        Weapon,
+        Healing,
+        Replenishing,
+        Chestplate
+    }
     [SerializeField] InteractionType interactionType;
+
+    [SerializeField] ItemType itemType;
 
     [SerializeField] PlayerControl playerControl;
 
@@ -23,6 +37,17 @@ public class InteractableBehavior : MonoBehaviour
 
     [SerializeField] GameObject equipped;
 
+    [SerializeField] Material material;
+
+    [SerializeField] GameObject portal1, portal2;
+
+    //STATS
+    [Header("STATS")]
+    [SerializeField] int atk, def, agi, healing;
+    public void Start()
+    {
+        playerControl = GameObject.Find("Player").GetComponent<PlayerControl>();
+    }
     public bool Action()
     {
         AudioSource audiosrc = GetComponent<AudioSource>();
@@ -35,9 +60,41 @@ public class InteractableBehavior : MonoBehaviour
             gameObject.GetComponent<Animator>().SetTrigger("open");
             playerControl.AddCoins(Random.Range(3, 9));
             audiosrc.PlayOneShot(audiosrc.clip);
+            gameObject.layer = LayerMask.NameToLayer("Default");
             return false;
         }
+        if (interactionType == InteractionType.Activate)
+        {
+            gameObject.transform.Find("Icosphere").GetComponent<Renderer>().material = material;
+            gameObject.layer = 0;
+            if(gameObject.name.Equals("Green Monument"))
+            {
+                portal1.SetActive(true);
+                portal2.SetActive(true);
+            }
+            audiosrc.PlayOneShot(audiosrc.clip);
+        }
         return false;
+    }
+
+    public void Use()
+    {
+        if (itemType == ItemType.Chestplate)
+        {
+            playerControl.AddToArmor(gameObject, 1);
+        }
+        if (itemType == ItemType.Boots)
+        {
+            playerControl.AddToArmor(gameObject, 3);
+        }
+        if(itemType == ItemType.Healing)
+        {
+            playerControl.Heal(healing);
+        }
+        if (itemType == ItemType.Replenishing)
+        {
+            playerControl.GainMana(healing);
+        }
     }
 
     public Sprite GetIcon()
@@ -69,5 +126,24 @@ public class InteractableBehavior : MonoBehaviour
     {
         return equipped;
     }
+
+    public int GetAtk()
+    {
+        return atk;
+    }
+
+    public int GetDef()
+    {
+        return def;
+    }
+
+    public int GetAgi()
+    {
+        return agi;
+    }
+
+    public ItemType GetItemType()
+    { return itemType; }
+
 
 }

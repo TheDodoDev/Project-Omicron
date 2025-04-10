@@ -28,17 +28,19 @@ public class PlayerControl : MonoBehaviour
 
     //Stats
     [SerializeField] float maxHP, currHP, maxStam, curStam, maxMana, currMana;
-    private bool canReduceHealthBar, changingStam, canReduceManaBar, canIncreaseStaminaBar;
+    private bool canReduceHealthBar, changingStam, canReduceManaBar, canIncreaseStaminaBar, canTakeDamage = true;
     private int coins;
-
+    private int atk, def, agi;
     //Inventory
     [SerializeField] GameObject hotBarMenu, selectionIndicator, inventoryMenu;
     private int currentSelected;
     GameObject[,] inventory = new GameObject[4, 4];
     GameObject[] hotBar = new GameObject[4];
+    GameObject[] armor = new GameObject[4];
     GameObject equipped, inHand;
     [SerializeField] GameObject hand;
     [SerializeField] TextMeshProUGUI coinText;
+    
 
     //Spells
     [SerializeField] GameObject electricBall, fireBall;
@@ -46,6 +48,7 @@ public class PlayerControl : MonoBehaviour
     GameObject[] spells = new GameObject[4];
     bool[] canUseSpell = new bool[4];
     private int selectedSpell = 0;
+
     void Start()
     {
         rb = GetComponent<Rigidbody>();
@@ -126,7 +129,7 @@ public class PlayerControl : MonoBehaviour
         if (equipped != null && equipped.GetComponent<InteractableBehavior>().GetID() == 1)
         {
             spellSystem.SetActive(true);
-            if (Input.GetMouseButtonDown(0) && spells[selectedSpell] != null && currMana >= spells[selectedSpell].GetComponent<VFXBehavior>().GetManaCost() && canUseSpell[selectedSpell])
+            if (Input.GetMouseButtonDown(0) && spells[selectedSpell] != null && currMana >= spells[selectedSpell].GetComponent<VFXBehavior>().GetManaCost() && canUseSpell[selectedSpell] && !inventoryMenu.activeSelf)
             {
                 GameObject o = Instantiate(spells[selectedSpell], transform.position + transform.forward * 0.5f + transform.up * 2f, Quaternion.identity);
                 LoseMana(o.GetComponent<VFXBehavior>().GetManaCost());
@@ -152,11 +155,18 @@ public class PlayerControl : MonoBehaviour
                 }
                 SwitchedSelectedSpell(selectedSpell);
             }
-            Debug.Log(selectedSpell);
         }
         else
         {
             spellSystem.SetActive(false);
+        }
+
+        if(equipped != null && !inventoryMenu.activeSelf && (hotBar[currentSelected - 1].GetComponent<InteractableBehavior>().GetItemType() != InteractableBehavior.ItemType.Weapon && hotBar[currentSelected - 1].GetComponent<InteractableBehavior>().GetItemType() != InteractableBehavior.ItemType.None))
+        {
+            if (Input.GetMouseButton(0))
+            {
+                UseItem(-1, currentSelected - 1);
+            }
         }
 
         //Stats
@@ -223,6 +233,16 @@ public class PlayerControl : MonoBehaviour
             TakeDamage(other.GetComponent<VFXBehavior>().GetDamage());
             Destroy(other.gameObject);
         }
+
+        if(other.name.Equals("Green Portal Ruins"))
+        {
+            transform.position = new Vector3(575, 62, 1017);
+        }
+        
+        if(other.name.Equals("Green Portal Desert"))
+        {
+            transform.position = new Vector3(875, 68, 960);
+        }
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -231,7 +251,13 @@ public class PlayerControl : MonoBehaviour
         {
             animator.SetBool("onGround", true);
             isGrounded = true;
-            Debug.Log("Entered Ground");
+        }
+
+        if(collision.gameObject.name.Contains("Cactus") && canTakeDamage)
+        {
+            TakeDamage(5);
+            canTakeDamage = false;
+            StartCoroutine(ImmunityCooldown());
         }
     }
 
@@ -241,7 +267,6 @@ public class PlayerControl : MonoBehaviour
         {
             animator.SetBool("onGround", false);
             isGrounded = false;
-            Debug.Log("Exited Ground");
         }
     }
 
@@ -328,16 +353,31 @@ public class PlayerControl : MonoBehaviour
 
     public void TakeDamage(int damage)
     {
-        currHP -= damage;
+        currHP -= Mathf.Max(damage - def, 1);
         healthBar.GetComponent<Image>().GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 500 * currHP/maxHP);
         StartCoroutine(CheckIfNotDamaged());
     }
 
+    public void Heal(int healing)
+    {
+        currHP += healing;
+        currHP = Mathf.Min(currHP, 100);
+        healthBar.GetComponent<Image>().GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 500 * currHP / maxHP);
+        lostHealthBar.GetComponent<Image>().GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 500 * currHP / maxHP);
+    }
     public void LoseMana(int manaLoss)
     {
         currMana -= manaLoss;
         manaBar.GetComponent<Image>().GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 500 * currMana / maxMana);
         StartCoroutine(CheckIfNoManaLoss());
+    }
+    
+    public void GainMana(int manaGain)
+    {
+        currMana += manaGain;
+        currMana = Mathf.Min(currMana, 100);
+        manaBar.GetComponent<Image>().GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 500 * currMana / maxMana);
+        lostManaBar.GetComponent<Image>().GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 500 * currMana / maxMana);
     }
 
     public void InflictStatusEffect()
@@ -451,6 +491,21 @@ public class PlayerControl : MonoBehaviour
                 hotBarMenu.transform.GetChild(i + 1).Find("Image").GetComponent<Image>().color = new Color(255, 255, 255, 0.0f);
             }
         }
+        def = 0;
+        for (int i = 0; i < armor.Length; i++)
+        {
+            if (armor[i] != null)
+            {
+                inventoryMenu.transform.Find("ArmorSlot_" + i).Find("Image").GetComponent<Image>().sprite = armor[i].GetComponent<InteractableBehavior>().GetIcon();
+                inventoryMenu.transform.Find("ArmorSlot_" + i).Find("Image").GetComponent<Image>().color = new Color(255, 255, 255, 0.6f);
+                def += armor[i].GetComponent<InteractableBehavior>().GetDef();
+            }
+            else
+            {
+                inventoryMenu.transform.Find("ArmorSlot_" + i).Find("QuantityText").gameObject.SetActive(false);
+                inventoryMenu.transform.Find("ArmorSlot_" + i).Find("Image").GetComponent<Image>().color = new Color(255, 255, 255, 0.0f);
+            }
+        }
         for (int r = 0; r < inventory.GetLength(0); r++)
         {
             for (int c = 0; c < inventory.GetLength(1); c++)
@@ -481,10 +536,9 @@ public class PlayerControl : MonoBehaviour
         }
 
     }
-
     public void MoveItem(int srcR, int srcC, int tarR, int tarC)
     {
-        Debug.Log("Moving from (" + srcR + ", " + srcC + ") to (" + tarR + ", " + tarC + ")" );
+        GameObject src = null;
         if(srcR == -1 && tarR == -1)
         {
             GameObject temp = hotBar[srcC];
@@ -512,11 +566,51 @@ public class PlayerControl : MonoBehaviour
         }
         RenderInventory();
     }
+    public void UseItem(int r, int c)
+    {
+        if(r == -1)
+        {
+            hotBar[c].GetComponent<InteractableBehavior>().Use();
+            if (hotBar[c].GetComponent<InteractableBehavior>().GetItemType() != InteractableBehavior.ItemType.Weapon) hotBar[c].GetComponent<InteractableBehavior>().SetNum(hotBar[c].GetComponent<InteractableBehavior>().GetNum() - 1);
+            if(hotBar[c].GetComponent<InteractableBehavior>().GetNum() == 0)
+            {
+                hotBar[c] = null;   
+            }
+        }
+        else
+        {
+            inventory[r,c].GetComponent<InteractableBehavior>().Use();
+            if (inventory[r,c].GetComponent<InteractableBehavior>().GetItemType() != InteractableBehavior.ItemType.Weapon) inventory[r, c].GetComponent<InteractableBehavior>().SetNum(inventory[r, c].GetComponent<InteractableBehavior>().GetNum() - 1);
+            if (inventory[r, c].GetComponent<InteractableBehavior>().GetNum() == 0)
+            {
+                inventory[r, c] = null;
+            }
+        }
+        RenderInventory();
+    }
+    public void AddToArmor(GameObject gameObject, int slot)
+    {
+        armor[slot] = gameObject;
+    }
 
+    public void UnequipArmor(int slot)
+    {
+        if (armor[slot] == null)
+        {
+            return;
+        }
+        bool success = AddObjectToInventory(armor[slot]);
+        if(success)
+        {
+            armor[slot] = null; 
+        }
+        
+        RenderInventory();
+    }
     public void AddCoins(int coins)
     {
         this.coins += coins;
-        coinText.text = coins.ToString();
+        coinText.text = this.coins.ToString();
     }
     IEnumerator CheckIfNotDamaged()
     {
@@ -593,5 +687,9 @@ public class PlayerControl : MonoBehaviour
         canUseSpell[selectedSpell] = true;
     }
 
-
+    IEnumerator ImmunityCooldown()
+    {
+        yield return new WaitForSeconds(0.5f);
+        canTakeDamage = true;
+    }
 }

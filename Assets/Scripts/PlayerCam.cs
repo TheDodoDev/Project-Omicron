@@ -61,7 +61,6 @@ public class PlayerCam : MonoBehaviour
         bool rayCast = Physics.Raycast(shot, out hit, 5, whatIsInteractable);
         if (rayCast)
         {
-            Debug.Log(hit.transform.gameObject.name);
             actionNotification.SetActive(true);
             if(Input.GetKeyDown(KeyCode.F))
             {

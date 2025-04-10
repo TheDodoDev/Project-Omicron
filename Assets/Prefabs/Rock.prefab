@@ -112,9 +112,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   interactionType: 0
+  itemType: 0
   playerControl: {fileID: 0}
   icon: {fileID: 0}
   name: 
-  id: 0
+  id: 1
   num: 0
   equipped: {fileID: 2953079029083080300, guid: f7dc55fd8d95a364d958bd1de19c9c0c, type: 3}
+  material: {fileID: 0}
+  portal1: {fileID: 0}
+  portal2: {fileID: 0}
+  atk: 0
+  def: 0
+  agi: 0
+  healing: 0

@@ -97,9 +97,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   interactionType: 0
+  itemType: 2
   playerControl: {fileID: 0}
   icon: {fileID: 21300000, guid: 8c807139b55ff3e4b8b222f252a2706b, type: 3}
   name: 
   id: 0
   num: 0
   equipped: {fileID: 6234762117420089236, guid: 49d1eabc484b3864da9c5ec8653fd86b, type: 3}
+  material: {fileID: 0}
+  portal1: {fileID: 0}
+  portal2: {fileID: 0}
+  atk: 0
+  def: 0
+  agi: 0
+  healing: 0

@@ -9,7 +9,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] bool isMoving;
     [SerializeField] int inventoryR, inventoryC;
     [SerializeField] PlayerControl playerControl;
-    [SerializeField] GameObject optionMenu;
+    [SerializeField] GameObject optionMenu, armorMenu;
     [SerializeField] RectTransform canvas;
     [SerializeField] Camera mainCamera;
     [SerializeField] GameObject inventory;
@@ -42,11 +42,38 @@ public class UIManager : MonoBehaviour
             this.inventoryR = rc[0] - '0';
             this.inventoryC = rc[2] - '0';
             optionMenu.SetActive(true);
+            armorMenu.SetActive(false);
             Vector2 mousePos;
             RectTransformUtility.ScreenPointToLocalPointInRectangle(canvas, Input.mousePosition, null, out mousePos);
             optionMenu.transform.localPosition = mousePos;
-            Debug.Log(Display.RelativeMouseAt(UnityEngine.Input.mousePosition));
-            Debug.Log(Input.mousePosition);
+        }
+    }
+
+    public void SetSelectedArmor(int slot)
+    {
+        if (inventory.activeSelf)
+        {
+            this.inventoryR = slot; 
+            armorMenu.SetActive(true);
+            optionMenu.SetActive(false);
+            Vector2 mousePos;
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(canvas, Input.mousePosition, null, out mousePos);
+            armorMenu.transform.localPosition = mousePos;
+        }
+    }
+
+    public void Unequip()
+    {
+        playerControl.UnequipArmor(inventoryR);
+        Clear();
+    }
+
+    public void Use()
+    {
+        if (inventory.activeSelf)
+        {
+            playerControl.UseItem(inventoryR, inventoryC);
+            Clear();
         }
     }
 
@@ -55,6 +82,7 @@ public class UIManager : MonoBehaviour
         inventoryC = 0;
         inventoryR = 0;
         optionMenu.SetActive(false);
+        armorMenu.SetActive(false);
         isMoving = false;
     }
 }

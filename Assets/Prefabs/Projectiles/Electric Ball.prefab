@@ -126,11 +126,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   type: 1
+  explosion: {fileID: 0}
   camera: {fileID: 0}
   player: {fileID: 0}
   rb: {fileID: 0}
   damage: 10
-  cooldown: 0
+  cooldown: 0.1
   manaCost: 2
 --- !u!54 &2894394354510838244
 Rigidbody:
