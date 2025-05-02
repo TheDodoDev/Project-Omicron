@@ -11,7 +11,8 @@ public class VFXBehavior : MonoBehaviour
     {
         BallOfBlemish,
         ElectricBall,
-        FireBall
+        FireBall,
+        AncientShot
     }
     [SerializeField] VFXType type;
     [SerializeField] ParticleSystem explosion;
@@ -36,6 +37,31 @@ public class VFXBehavior : MonoBehaviour
         if (type == VFXType.FireBall)
         {
             rb.velocity = camera.transform.forward * 20f;
+        }
+        if(type == VFXType.AncientShot)
+        {
+            transform.LookAt(player.transform.position + Vector3.up);
+            rb.velocity = transform.forward * 50;
+        }
+    }
+
+    private void Awake()
+    {
+        player = GameObject.Find("Player");
+        rb = GetComponent<Rigidbody>();
+        camera = player.transform.GetChild(2).transform;
+        if (type == VFXType.ElectricBall)
+        {
+            rb.velocity = camera.transform.forward * 30f;
+        }
+        if (type == VFXType.FireBall)
+        {
+            rb.velocity = camera.transform.forward * 20f;
+        }
+        if (type == VFXType.AncientShot)
+        {
+            transform.LookAt(player.transform.position);
+            rb.velocity = transform.forward * 50f;
         }
     }
 
@@ -85,9 +111,17 @@ public class VFXBehavior : MonoBehaviour
                 float dist = Vector3.Distance(x.transform.position, transform.position);
                 if (dist <= 10)
                 {
-                    if(x.GetComponent<SpiderBehavior>() != null)
+                    if (x.GetComponent<SpiderBehavior>() != null)
                     {
                         x.GetComponent<SpiderBehavior>().TakeDamage((int)(damage * (10 - dist) / 10));
+                    }
+                    if (x.GetComponent<SandwormBehavior>() != null)
+                    {
+                        x.GetComponent<SandwormBehavior>().TakeDamage((int)(damage * (10 - dist) / 10));
+                    }
+                    if (x.GetComponent<DroneBehavior>() != null)
+                    {
+                        x.GetComponent<DroneBehavior>().TakeDamage((int)(damage * (10 - dist) / 10));
                     }
                 }
             }

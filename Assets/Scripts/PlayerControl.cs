@@ -31,6 +31,8 @@ public class PlayerControl : MonoBehaviour
     private bool canReduceHealthBar, changingStam, canReduceManaBar, canIncreaseStaminaBar, canTakeDamage = true;
     private int coins;
     private int atk, def, agi;
+    public bool isDead;
+    [SerializeField] TextMeshProUGUI deathUI;
     //Inventory
     [SerializeField] GameObject hotBarMenu, selectionIndicator, inventoryMenu;
     private int currentSelected;
@@ -75,6 +77,14 @@ public class PlayerControl : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if(isDead)
+        {
+            if(Input.GetKeyDown(KeyCode.R))
+            {
+                SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+            }
+            return;
+        }
 
         //Movement
         transform.rotation = orientation.rotation;
@@ -187,6 +197,10 @@ public class PlayerControl : MonoBehaviour
     }
     private void FixedUpdate()
     {
+        if(isDead)
+        {
+            return;
+        }
         if (curStam <= 0)
         {
             movementSpeed = walkSpeed;
@@ -230,6 +244,7 @@ public class PlayerControl : MonoBehaviour
     {
         if(other.CompareTag("Projectile"))
         {
+            Debug.Log("Player is Hit");
             TakeDamage(other.GetComponent<VFXBehavior>().GetDamage());
             Destroy(other.gameObject);
         }
@@ -355,6 +370,11 @@ public class PlayerControl : MonoBehaviour
     {
         currHP -= Mathf.Max(damage - def, 1);
         healthBar.GetComponent<Image>().GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 500 * currHP/maxHP);
+        if(currHP <= 0)
+        {
+            isDead = true;
+            deathUI.gameObject.SetActive(true);
+        }
         StartCoroutine(CheckIfNotDamaged());
     }
 

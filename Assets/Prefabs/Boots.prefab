@@ -108,6 +108,10 @@ MonoBehaviour:
   material: {fileID: 0}
   portal1: {fileID: 0}
   portal2: {fileID: 0}
+  atk: 0
+  def: 2
+  agi: 0
+  healing: 0
 --- !u!64 &3469287838244130577
 MeshCollider:
   m_ObjectHideFlags: 0

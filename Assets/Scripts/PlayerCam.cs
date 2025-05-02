@@ -34,6 +34,10 @@ public class PlayerCam : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (player.GetComponent<PlayerControl>().isDead)
+        {
+            return;
+        }
         float mouseX = Input.GetAxisRaw("Mouse X") * Time.deltaTime * sensX * 100;
         float mouseY = Input.GetAxisRaw("Mouse Y") * Time.deltaTime * sensY * 100;
 

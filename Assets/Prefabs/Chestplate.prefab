@@ -123,6 +123,6 @@ MonoBehaviour:
   portal1: {fileID: 0}
   portal2: {fileID: 0}
   atk: 0
-  def: 8
+  def: 5
   agi: 0
   healing: 0
